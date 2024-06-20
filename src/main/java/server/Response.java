@@ -1,53 +1,29 @@
 package server;
-
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStream;
 
 public class Response {
-
-    private HttpExchange httpExchange;
-    private Headers headers;
-    private StringBuilder stringBuilder;
-    private boolean isSent;
-
-    public Response(HttpExchange httpExchange) {
-        this.httpExchange = httpExchange;
-        this.stringBuilder = new StringBuilder();
-        this.isSent = false;
+    // Method untuk mendapatkan response header,
+    // Mengatur Content type, mengirim respon ke client dan
+    // mengatur status code, response length, dan menulis respon ke output stream
+    public static void getResponse(HttpExchange exchange, String jsonObject, String[] path, String table, int statusCode) throws IOException{
+        OutputStream outputstream = exchange.getResponseBody();
+        exchange.getResponseHeaders().set("Content-Type","application/json");
+        String response = jsonObject;
+        exchange.sendResponseHeaders(statusCode,response.length());
+        outputstream.write(response.getBytes());
+        outputstream.flush();
+        outputstream.close();
     }
 
-    public void setBody(String string) {
-        stringBuilder.setLength(0);
-        stringBuilder.append(string);
-    }
-
-    public void send(int status) {
-        try {
-            this.httpExchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
-            this.httpExchange.sendResponseHeaders(status, 0);
-
-            String body = stringBuilder.toString();
-            PrintStream out = new PrintStream(this.httpExchange.getResponseBody());
-            out.write(body.getBytes(StandardCharsets.UTF_8));
-            out.flush();
-        } catch (IOException ioe) {
-            System.err.println("Problem encountered when sending response.");
-            ioe.printStackTrace();
-            return;
-        } finally {
-            this.httpExchange.close();
-        }
-        this.isSent = true;
-    }
-
-    public boolean isSent() {
-        if (this.httpExchange.getResponseCode() != -1)
-            this.isSent = true;
-        return isSent;
+    // Method untuk send response
+    public static void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
+        OutputStream outputStream = exchange.getResponseBody();
+        exchange.sendResponseHeaders(statusCode, response.length());
+        outputStream.write(response.getBytes());
+        outputStream.flush();
+        outputStream.close();
     }
 }
-

@@ -1,16 +1,24 @@
 package server;
 
-import server.Server;
+import com.sun.net.httpserver.HttpServer;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+
+import static sun.net.www.protocol.http.AuthCacheValue.Type;
+
 public class Main {
-    public static void main(String[] args) throws Exception {
-        int port = 8080;
-        if (args.length == 1) {
-            port = Integer.parseInt(args[0]);
+    public static void main(String[] args) throws IOException{
+        try {
+            HttpServer httpServer = HttpServer.create(new InetSocketAddress("localhost", 9057), 0);
+            // context untuk endpoint "", dgn class untuk handle HTTP RequestHandler
+            httpServer.createContext("/", new Server());
+            httpServer.setExecutor(Executors.newSingleThreadExecutor());
+            httpServer.start();
+            System.out.println("Listening to Port 9057");
+        } catch (Exception exception){
+            exception.printStackTrace();
         }
-        System.out.printf("Listening on port: %s...\n", port);
-        new Server(port);
     }
 }
